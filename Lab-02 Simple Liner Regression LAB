@@ -1,0 +1,41 @@
+import tensorflow as tf  # tensorflow를 import한 후 tf라고 선언
+import numpy as np  # numpy를 import한 후 np라고 선언 ( numpy는 배열 수치연산에 이용하는 파이썬 범용 라이브러리 )
+tf.enable_eager_execution() # 즉시 실행
+
+# Data
+x_data = [1, 2, 3, 4, 5]  # X데이터를 [1, 2, 3, 4, 5] 로 설정
+y_data = [1, 2, 3, 4, 5]  # Y데이터를 [1, 2, 3, 4, 5]로 설정 
+
+# W, b initialize
+W = tf.Variable(2.9)  # W를 변수로 설정해주고 W의 초기값을 2.9로 지정
+b = tf.Variable(0.5)  # b를 변수로 설정해주고 b의 초기값을 0.5로 지정
+
+learning_rate = 0.01 # 러닝레이터 상수를 0.01로 지정 ( 기울기 반영도에 따라 러닝레이트 값이 지정됨 )
+
+# W, b update
+for i in range(100):  # 100번 ( 0번째 부터 99번째 ) 반복하여 실행
+    # Gradient descent (경사 하강법 / cost를 최소화시키는 알고리즘 == 오차를 최소화 )
+    with tf.GradientTape() as tape: # 변수의 정보를 tape에 기록
+        hypothesis = W * x_data + b # 가설 함수인 H(x)=Wx+b 만들어줌 
+        cost = tf.reduce_mean(tf.square(hypothesis - y_data)) # cost함수를 만들어 줌 {( 예측값 - 실제값 )의 제곱의 평균 값 }
+    W_grad, b_grad = tape.gradient(cost, [W, b]) # tape에 기록된 변수들을 호출하여 cost함수의 미분값을 구한다.
+                                                 # W에 대한 기울기는 W_grad라고 지정하고 , b에 대한 기울기는 b_grad라고 지정한다.
+    W.assign_sub(learning_rate * W_grad) # 뺸값을 다시 할당 해주는 -=r과 같은 assign_sub함수를 호출해주어 W와 b값에 각각 할당 해줌
+    b.assign_sub(learning_rate * b_grad) # ( W = W - learning_rate * W_grad  /  b  =  b  -  learning_rate * b_grad )
+    if i % 10 == 0:  # 중간중간에 W,b,cost값의 변화를 확인하기 위해 10의 배수 번째 순서마다 W,b,cost 값을 출력해줌.
+      print("{:5}|{:10.4f}|{:10.4f}|{:10.6f}".format(i, W.numpy(), b.numpy(), cost))
+
+print() # 출력
+
+#    i        W         b         cost
+    0|    2.4520|    0.3760| 45.660004    # i 는 0부터 99까지
+   10|    1.1036|    0.0034|  0.206336    # W 값은 2.45에서 1까지 줄어듬        
+   20|    1.0128|   -0.0209|  0.001026    # b는 0에 수렴
+   30|    1.0065|   -0.0218|  0.000093    # cost가 줄어들면서 오차가 매우 적어져 감 ( 0에 가까워짐 )
+   40|    1.0059|   -0.0212|  0.000083 
+   50|    1.0057|   -0.0205|  0.000077
+   60|    1.0055|   -0.0198|  0.000072
+   70|    1.0053|   -0.0192|  0.000067
+   80|    1.0051|   -0.0185|  0.000063
+   90|    1.0050|   -0.0179|  0.000059
+   
