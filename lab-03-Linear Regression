@@ -1,0 +1,93 @@
+                    [ cost function in TensorFlow  ]
+import tensorflow as tf   # tensorflow를 import 하고 tf라고 선언
+import numpy as np # numpy를 import한 후 np라고 선언
+
+tf.enable_eager_execution()   # 즉시실행  
+
+X = np.array([1, 2, 3])  # X 값을 입력
+Y = np.array([1, 2, 3])  # Y 값을 입력
+
+def cost_func(W, X, Y):   # W, X, Y 값을 가지고 cost함수를 구하는 함수 
+  hypothesis = X * W   # 가설함수
+  return tf.reduce_mean(tf.square(hypothesis - Y))   # (가설 - 실제값)의 제곱의 평균 을 cost_func에 반환해줌
+
+W_values = np.linspace(-3, 5, num=15)  # -3 부터 5까지 15개의 값으로 쪼개 W_values에 list로 입력
+cost_values = []
+
+for feed_W in W_values:  # W_values의 list값에서 하나씩 뽑아 씀
+    curr_cost = cost_func(feed_W, X, Y)  # W 값에 따라 cost가 어떻게 변하는지를 기록
+    cost_values.append(curr_cost)  # 변하는 cost값을 계속하여 cost_values라는 list에 추가해준다
+    print("{:6.3f} | {:10.5f}".format(feed_W, curr_cost)) # 변화하는 값을 출력
+    
+
+-3.000 |   74.66667
+-2.429 |   54.85714
+-1.857 |   38.09524
+-1.286 |   24.38095
+-0.714 |   13.71429
+-0.143 |    6.09524
+ 0.429 |    1.52381
+ 1.000 |    0.00000
+ 1.571 |    1.52381
+ 2.143 |    6.09524
+ 2.714 |   13.71429
+ 3.286 |   24.38095
+ 3.857 |   38.09524
+ 4.429 |   54.85714
+ 5.000 |   74.66667
+ 
+                [ Gradient descent 구현 ]
+                
+tf.set_random_seed(0)  # 아래 코드를 다시 실행 했을 때도 다시 똑같이 실행 시킬수 있도록 random_seed를 특정값으로 초기화 시킴.
+
+x_data = [1., 2., 3., 4.] # x데이터 입력
+y_data = [1., 3., 5., 7.] # y데이터 입력
+
+W = tf.Variable(tf.random_normal([1], -100., 100.)) # 정규분포를  따르는 랜덤 숫자를 한개 짜리를 변수로 만들어 W에 할당
+
+for step in range(300): # 300번 반복 ( 0번째 부터 299번째 까지 )
+    hypothesis = W * X  #가설 함수
+    cost = tf.reduce_mean(tf.square(hypothesis - Y))  # 손실함수 cost 함수 : (가설-실제값)제곱의 평균
+
+    alpha = 0.01  # 러닝레이트 와 비슷하게 이용
+    gradient = tf.reduce_mean(tf.multiply(tf.multiply(W, X) - Y, X))  # 기울기를 구하여( 미분하여 ) gradient의 값으로 지정
+    descent = W - tf.multiply(alpha, gradient) # descent값을 W- 미분한것 * alpha(러닝레이트)
+    W.assign(descent) # 새로운 W값을 descent값으로 계속 업데이트 해줌
+    
+    if step % 10 == 0: # 10의 배수 번쨰 순서 마다 cost값과 w값을 출력해줌
+        print('{:5} | {:10.4f} | {:10.6f}'.format(
+            step, cost.numpy(), W.numpy()[0]))
+            
+   step     cost         W 
+    0 | 11716.3086 |  48.767971    # cost값이 매우 큰 숫자에서 0에 수렴해감
+   10 |  4504.9126 |  30.619968    # W값은 1(특정한 값)에 수렴
+   20 |  1732.1364 |  19.366755    
+   30 |   666.0052 |  12.388859
+   40 |   256.0785 |   8.062004
+   50 |    98.4620 |   5.379007
+   60 |    37.8586 |   3.715335
+   70 |    14.5566 |   2.683725
+   80 |     5.5970 |   2.044044
+   90 |     2.1520 |   1.647391
+  100 |     0.8275 |   1.401434
+  110 |     0.3182 |   1.248922
+  120 |     0.1223 |   1.154351
+  130 |     0.0470 |   1.095710
+  140 |     0.0181 |   1.059348
+  150 |     0.0070 |   1.036801
+  160 |     0.0027 |   1.022819
+  170 |     0.0010 |   1.014150
+  180 |     0.0004 |   1.008774
+  190 |     0.0002 |   1.005441
+  200 |     0.0001 |   1.003374
+  210 |     0.0000 |   1.002092
+  220 |     0.0000 |   1.001297
+  230 |     0.0000 |   1.000804
+  240 |     0.0000 |   1.000499
+  250 |     0.0000 |   1.000309
+  260 |     0.0000 |   1.000192
+  270 |     0.0000 |   1.000119
+  280 |     0.0000 |   1.000074
+  290 |     0.0000 |   1.000046
+ 
+
