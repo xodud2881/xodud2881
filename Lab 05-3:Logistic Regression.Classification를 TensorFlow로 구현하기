@@ -1,0 +1,61 @@
+import numpy as np # numpy를 import하고 np라고 선언
+import matplotlib.pyplot as plt # matplotlib.pyplot를 import하고 plt라고 선언
+import tensorflow as tf # tensorflow를 import하고 tf라고 선언
+import tensorflow.contrib.eager as tfe # tensorflow.contrib.eager를 import하고 tfe라고 선언
+
+tf.enable_eager_execution()  # 즉시실행 코드
+tf.set_random_seed(777)  # 아래 코드를 다시 실행 했을 때도 다시 똑같이 실행 시킬 수 있도록 random_seed를 특정값으로 초기화 시킴
+
+x_train = [[1., 2.],
+          [2., 3.],
+          [3., 1.],
+          [4., 3.],
+          [5., 3.],
+          [6., 2.]]
+y_train = [[0.],
+          [0.],
+          [0.],
+          [1.],
+          [1.],
+          [1.]]
+
+x_test = [[5.,2.]]
+y_test = [[1.]]
+
+
+dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train)).batch(len(x_train))
+# tf.data를 통해 x_train 값과 y_train값을 x_train의 길이만큼 batch로 학습을 하겠단걸 토대로  data값을 가져옴
+
+
+W = tf.Variable(tf.zeros([2,1]), name='weight')    # 2행 1열 데이터 형태의 W변수를 설정  (전부 0 )
+b = tf.Variable(tf.zeros([1]), name='bias')        # 1개짜리 데이터 형태로 b변수를 설정   (0)
+
+def logistic_regression(features):    # 시그모이드를 이용하여 가설함수 제작 
+    hypothesis  = tf.div(1., 1. + tf.exp(tf.matmul(features, W) + b))   # 시그모이드 함수 구현
+    return hypothesis
+
+def loss_fn(hypothesis, features, labels):    #  logistic regression의 cost함수 구현
+    cost = -tf.reduce_mean(labels * tf.log(logistic_regression(features)) + (1 - labels) * tf.log(1 - hypothesis))
+    return cost
+    
+def grad(hypothesis, features, labels):  # 경사하강법을 위한 미분 함수 구현
+    with tf.GradientTape() as tape: # tape에 변수 값들을 저장
+        loss_value = loss_fn(logistic_regression(features),features,labels)  #loss_value에 미분 값을 적용
+    return tape.gradient(loss_value, [W,b])
+
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)  #  러닝레이트를 0.01로 하는 최소화 함수를  optimizer로 선언
+
+EPOCHS = 1001  # EPOCHS를 1001로 지정
+for step in range(EPOCHS):   # 1001번 반복 ( 0번째 부터 1000번째 까지 )하면서 cost값을 줄여가며 optimizer를 선언하여 최소화 하기위해 계속 변수들을 업데이트 해줌
+    for features, labels  in tfe.Iterator(dataset):
+        grads = grad(logistic_regression(features), features, labels)
+        optimizer.apply_gradients(grads_and_vars=zip(grads,[W,b]))
+        if step % 100 == 0:  # 처음부터 100배수마다 print
+            print("Iter: {}, Loss: {:.4f}".format(step, loss_fn(logistic_regression(features),features,labels)))
+
+def accuracy_fn(hypothesis, labels):  # 가설을 이용해 도출된 값인 predicted값과 실제값인 labels를 비교하기 위한 함수
+    predicted = tf.cast(hypothesis > 0.5, dtype=tf.float32)
+    accuracy = tf.reduce_mean(tf.cast(tf.equal(predicted, labels), dtype=tf.int32))
+    return accuracy
+
+test_acc = accuracy_fn(logistic_regression(x_test),y_test) # 값이 정확한지 출력하여 모델을 검증할 수있다.
