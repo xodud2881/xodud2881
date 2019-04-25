@@ -54,7 +54,7 @@ for step in range(300): # 300번 반복 ( 0번째 부터 299번째 까지 )
     descent = W - tf.multiply(alpha, gradient) # descent값을 W- 미분한것 * alpha(러닝레이트)
     W.assign(descent) # 새로운 W값을 descent값으로 계속 업데이트 해줌
     
-    if step % 10 == 0: # 10의 배수 번쨰 순서 마다 cost값과 w값을 출력해줌
+    if step % 10 == 0: # 처음부터 10번째 마다 cost값과 w값을 출력해줌
         print('{:5} | {:10.4f} | {:10.6f}'.format(
             step, cost.numpy(), W.numpy()[0]))
             
