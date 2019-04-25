@@ -1,0 +1,122 @@
+[Multi-variable linear regression (1)]
+# data and label
+x1 = [ 73.,  93.,  89.,  96.,  73.] # x1데이터 입력
+x2 = [ 80.,  88.,  91.,  98.,  66.] # x2데이터 입력
+x3 = [ 75.,  93.,  90., 100.,  70.] # x3데이터 입력
+Y  = [152., 185., 180., 196., 142.] # x4데이터 입력
+
+# random weights
+w1 = tf.Variable(tf.random_normal([1])) # 변수w1의 초기값을 한개짜리 데이터로 랜덤값을 지정
+w2 = tf.Variable(tf.random_normal([1])) # 변수w2의 초기값을 한개짜리 데이터로 랜덤값을 지정
+w3 = tf.Variable(tf.random_normal([1])) # 변수w3의 초기값을 한개짜리 데이터로 랜덤값을 지정
+b  = tf.Variable(tf.random_normal([1])) # 변수b의  초기값을 한개짜리 데이터로 랜덤값을 지정
+
+learning_rate = 0.000001  # 러닝레이트를 0.000001로 지정
+
+for i in range(1000+1): # 0번쨰 부터 1000번째 까지 1001번 반복하여 실행
+    # tf.GradientTape() to record the gradient of the cost function
+    with tf.GradientTape() as tape: #  tape에 변수의 정보 기록
+        hypothesis = w1 * x1 +  w2 * x2 + w3 * x3 + b  # 다항 선형회귀의 가설함수
+        cost = tf.reduce_mean(tf.square(hypothesis - Y)) # cost 함수 (손실함수)
+    # calculates the gradients of the cost
+    w1_grad, w2_grad, w3_grad, b_grad = tape.gradient(cost, [w1, w2, w3, b]) # tape의 기록된 변수들을 호출하여 cost함수의 미분값을 구한다.
+                                                                             # w1에 대한 기울기는 w1_grade라고 지정
+                                                                             # w2에 대한 기울기는 w2_grade라고 지정
+                                                                             # w3에 대한 기울기는 w3_grade라고 지정
+                                                                             # b에 대한 기울기는 b_grade라고 지정
+    # update w1,w2,w3 and b
+    w1.assign_sub(learning_rate * w1_grad)   # 기존 w1값에서 (learningrate * w1_grade)을 빼주어 새로운 w1값을 갱신
+    w2.assign_sub(learning_rate * w2_grad)   # 기존 w2값에서 (learningrate * w2_grade)을 빼주어 새로운 w2값을 갱신
+    w3.assign_sub(learning_rate * w3_grad)   # 기존 w3값에서 (learningrate * w3_grade)을 빼주어 새로운 w3값을 갱신
+    b.assign_sub(learning_rate * b_grad)     # 기존 b값에서 (learningrate * b_grade)을 빼주어 새로운 b값을 갱신
+
+    if i % 50 == 0:  # 50번째 마다 cost값 출력
+      print("{:5} | {:12.4f}".format(i, cost.numpy()))
+      
+    0 | 5793889.5000   # cost의 최적화가 
+   50 |   64291.1484
+  100 |     715.2902
+  150 |       9.8462
+  200 |       2.0152
+  250 |       1.9252
+  300 |       1.9210
+  350 |       1.9177
+  400 |       1.9145
+  450 |       1.9114
+  500 |       1.9081
+  550 |       1.9050
+  600 |       1.9018
+  650 |       1.8986
+  700 |       1.8955
+  750 |       1.8923
+  800 |       1.8892
+  850 |       1.8861
+  900 |       1.8829
+  950 |       1.8798
+ 1000 |       1.876
+      
+      
+ [Multi-variable linear regression (2)]
+
+data = np.array([                             # array를 이용하여 데이터를 행렬 형태로 data에 입력
+    # X1,   X2,    X3,   y
+    [ 73.,  80.,  75., 152. ],
+    [ 93.,  88.,  93., 185. ],
+    [ 89.,  91.,  90., 180. ],
+    [ 96.,  98., 100., 196. ],
+    [ 73.,  66.,  70., 142. ]
+], dtype=np.float32)
+
+# slice data
+X = data[:, :-1] # 전체 행과 마지막 열을 제외한 모든 열을 X의 데이터로 입력
+y = data[:, [-1]] # 전체 행과 마지막열을 y의 데이터로 입력
+
+W = tf.Variable(tf.random_normal([3, 1]))  # x값의 열이 3개 이므로 3개의 행과 y 출력값은 하나이므로 1개의 열로 W 변수 초기값을 3행 1열 형태로 랜덤으로
+                                              w값으로 부여
+b = tf.Variable(tf.random_normal([1]))    # b 변수 초기값을 한개짜리 데이터 형태로 랜덤값을 주어 b값으로 부여
+
+learning_rate = 0.000001  # learningrate값을 0.000001로 지정
+
+# hypothesis, prediction function
+def predict(X):               # predict 함수를 X*W + b로 지정
+    return tf.matmul(X, W) + b
+
+print("epoch | cost")
+
+n_epochs = 2000   # n_epochs를 2000으로 지정
+for i in range(n_epochs+1): # 2001회 epochs로 실행하도록 지정
+    # tf.GradientTape() to record the gradient of the cost function
+    with tf.GradientTape() as tape: # tape에 변수의 정보 기록
+        cost = tf.reduce_mean((tf.square(predict(X) - y)))  # cost함수
+
+    # calculates the gradients of the loss
+    W_grad, b_grad = tape.gradient(cost, [W, b])    # W_grad 에는 W에 대한 미분값 / b_grde 에는 b에대한 미분값을 부여
+
+    # updates parameters (W and b)
+    W.assign_sub(learning_rate * W_grad) # 기존 W값에서 (learning_rate * W_grad)를 빼주어 새로운 W값 갱신
+    b.assign_sub(learning_rate * b_grad)  # 기존 b값에서 (learning_rate * b_grad)를 빼주어 새로운 b값 갱신
+    
+    if i % 100 == 0:    # 이를 처음부터 100번째 순서 마다 출력
+        print("{:5} | {:10.4f}".format(i, cost.numpy()))
+        
+    0 |  5455.5903                  # 처음에는 cost값이 매우 크지만 급격히 줄어들어 최적화가 빠르게 이루어짐
+  100 |    31.7443                  # 행렬을 이용했을때 더 최적화가 빠르게 이루어짐.
+  200 |    30.9326
+  300 |    30.7894
+  400 |    30.6468
+  500 |    30.5055
+  600 |    30.3644
+  700 |    30.2242
+  800 |    30.0849
+  900 |    29.9463
+ 1000 |    29.8081
+ 1100 |    29.6710
+ 1200 |    29.5348
+ 1300 |    29.3989
+ 1400 |    29.2641
+ 1500 |    29.1299
+ 1600 |    28.9961
+ 1700 |    28.8634
+ 1800 |    28.7313
+ 1900 |    28.5997
+ 2000 |    28.4689
