@@ -22,7 +22,7 @@ for i in range(100):  # 100번 ( 0번째 부터 99번째 ) 반복하여 실행
                                                  # W에 대한 기울기는 W_grad라고 지정하고 , b에 대한 기울기는 b_grad라고 지정한다.
     W.assign_sub(learning_rate * W_grad) # 뺸값을 다시 할당 해주는 -=r과 같은 assign_sub함수를 호출해주어 W와 b값에 각각 할당 해줌
     b.assign_sub(learning_rate * b_grad) # ( W = W - learning_rate * W_grad  /  b  =  b  -  learning_rate * b_grad )
-    if i % 10 == 0:  # 중간중간에 W,b,cost값의 변화를 확인하기 위해 10의 배수 번째 순서마다 W,b,cost 값을 출력해줌.
+    if i % 10 == 0:  # 중간중간에 W,b,cost값의 변화를 확인하기 위해 처음부터 10번째 순서마다 W,b,cost 값을 출력해줌.
       print("{:5}|{:10.4f}|{:10.4f}|{:10.6f}".format(i, W.numpy(), b.numpy(), cost))
 
 print() # 출력
